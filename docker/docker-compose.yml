@@ -1,0 +1,55 @@
+version: "3.5"
+
+services:
+  nginx:
+    image: nginx:alpine
+    working_dir: /application
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ../:/application
+    ports:
+      - '80:80'
+    depends_on:
+      - php-fpm
+    tty: true
+
+  php-fpm:
+      build: php
+      working_dir: /application
+      volumes:
+          - ../:/application
+          - ./php/php-ini-overrides.ini:/etc/php/7.4/fpm/conf.d/99-overrides.ini
+      ports:
+          - '9000'
+      links:
+          - postgres
+
+  portainer:
+    image: portainer/portainer
+    command: --admin-password '123456'
+    volumes:
+      - ./data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 9000:9000
+
+  postgres:
+    image: postgres:12.6
+    restart: always
+    environment:
+      POSTGRES_USER: someuser
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: app
+    ports:
+      - '5432:5432'
+
+  phppgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
