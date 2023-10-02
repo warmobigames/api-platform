@@ -1,4 +1,4 @@
-.idea
+.idea/*
 /.env.local
 /.env.local.php
 /.env.*.local
@@ -8,3 +8,8 @@
 /vendor/
 /docker/data
 ###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###
