@@ -5,8 +5,8 @@ services:
     image: nginx:alpine
     working_dir: /application
     volumes:
-      - ./nginx:/etc/nginx/conf.d
-      - ../:/application
+      - ./docker/nginx:/etc/nginx/conf.d
+      - ./:/application
     ports:
       - '80:80'
     depends_on:
@@ -14,11 +14,11 @@ services:
     tty: true
 
   php-fpm:
-      build: php
+      build: docker/php
       working_dir: /application
       volumes:
-          - ../:/application
-          - ./php/php-ini-overrides.ini:/etc/php/7.4/fpm/conf.d/99-overrides.ini
+          - ./:/application
+          - ./docker/php/php-ini-overrides.ini:/etc/php/7.4/fpm/conf.d/99-overrides.ini
       ports:
           - '9000'
       links:
@@ -28,7 +28,7 @@ services:
     image: portainer/portainer
     command: --admin-password '123456'
     volumes:
-      - ./data:/data
+      - ./docker/data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - 9000:9000
