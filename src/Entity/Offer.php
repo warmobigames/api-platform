@@ -20,13 +20,13 @@ class Offer
     #[ORM\Column]
     private int $id;
 
-    #[ORM\Column(type:"string", length:255)]
+    #[ORM\Column(length:255)]
     private string $title;
 
     #[ORM\Column(type:"text", length:255)]
     private string $description;
 
-    #[ORM\Column(type:"string", length:255)]
+    #[ORM\Column(length:255)]
     #[Gedmo\Slug(fields: ['title'])]
     private string $slug;
 
