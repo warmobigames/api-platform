@@ -1,21 +1,54 @@
-version: '3'
+version: "3.5"
 
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-15}-alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
+  nginx:
+    image: nginx:alpine
+    working_dir: /application
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+      - ./docker/nginx:/etc/nginx/conf.d
+      - ./:/application
+    ports:
+      - '${HTTP_PORT}:80'
+    depends_on:
+      - php-fpm
+    tty: true
 
-volumes:
-###> doctrine/doctrine-bundle ###
-  database_data:
-###< doctrine/doctrine-bundle ###
+  php-fpm:
+      build: docker/php
+      working_dir: /application
+      volumes:
+          - ./:/application
+      ports:
+          - '9000'
+      links:
+          - postgres
+
+  portainer:
+    image: portainer/portainer
+    command: --admin-password '123456'
+    volumes:
+      - ./docker/data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 9000:9000
+
+  postgres:
+    image: postgres:12.6
+    restart: always
+    environment:
+      POSTGRES_USER: someuser
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: app
+    ports:
+      - '${DB_PORT}:5432'
+
+  phppgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "${PGADMIN_PORT}:80"
+    depends_on:
+      - postgres

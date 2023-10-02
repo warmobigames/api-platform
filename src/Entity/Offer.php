@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Repository\OfferRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
@@ -11,8 +13,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation\UploadableField;
 
 #[ORM\Entity(repositoryClass: OfferRepository::class)]
-#[ApiResource]
-
+#[ApiResource(
+    operations: [
+        new Get(),
+        new GetCollection(),
+    ]
+)]
 class Offer
 {
     #[ORM\Id]
@@ -35,15 +41,6 @@ class Offer
 
     #[ORM\Column(type:"string", length:255, nullable:true)]
     private string $image;
-
-
-    #[Assert\Image(
-        maxRatio: 1.35,
-        minRatio: 1.31,
-        maxRatioMessage: "Соотношение высоты и ширины изображения должны быть 4:3",
-        minRatioMessage: "Соотношение высоты и ширины изображения должны быть 4:3"
-    )]
-    private string $imageFile;
 
     #[ORM\Column(type:"datetime", nullable:true)]
     private \DateTime $imageUpdatedAt;
