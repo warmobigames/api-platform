@@ -32,7 +32,7 @@ final class Version20230930161322 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE SCHEMA public');
+        
         $this->addSql('ALTER TABLE offer ADD name VARCHAR(255) NOT NULL');
         $this->addSql('ALTER TABLE offer DROP title');
         $this->addSql('ALTER TABLE offer DROP description');

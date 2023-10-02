@@ -27,7 +27,7 @@ final class Version20231002140312 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE SCHEMA public');
+        
         $this->addSql('ALTER TABLE category ALTER slug TYPE VARCHAR(50)');
         $this->addSql('ALTER TABLE category RENAME COLUMN title TO name');
     }
