@@ -4,10 +4,10 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CategoryRepository;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Gedmo\Mapping\Annotation as Gedmo;
+use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation\Slug;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ApiResource]
@@ -16,46 +16,67 @@ class Category
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private int $id;
+    private ?int $id = null;
 
-    #[ORM\Column(length: 50)]
-    private string $title;
-
-    #[ORM\Column(length:255)]
-    #[Gedmo\Slug(fields: ['title'])]
-    private string $slug;
-
-    #[ORM\OneToMany(targetEntity: Product::class, mappedBy: 'category')]
+    #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'category')]
     private Collection $products;
 
-    /**
-     * @return int
-     */
-    public function getId(): int
+    #[ORM\Column(length: 255)]
+    private ?string $title = null;
+
+    #[Slug(fields: ['title'])]
+    #[ORM\Column(length: 255)]
+    private string $slug;
+
+    public function __construct()
+    {
+        $this->products = new ArrayCollection();
+    }
+
+    public function getId(): ?int
     {
         return $this->id;
     }
 
     /**
-     * @param int $id
+     * @return Collection<int, Product>
      */
-    public function setId(int $id): void
+    public function getProducts(): Collection
     {
-        $this->id = $id;
+        return $this->products;
+    }
+
+    public function addProduct(Product $product): static
+    {
+        if (!$this->products->contains($product)) {
+            $this->products->add($product);
+            $product->addCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduct(Product $product): static
+    {
+        if ($this->products->removeElement($product)) {
+            $product->removeCategory($this);
+        }
+
+        return $this;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->title;
     }
 
     /**
-     * @param string $title
+     * @param string|null $title
      */
-    public function setTitle(string $title): void
+    public function setTitle(?string $title): void
     {
         $this->title = $title;
     }
@@ -67,29 +88,4 @@ class Category
     {
         return $this->slug;
     }
-
-    /**
-     * @param string $slug
-     */
-    public function setSlug(string $slug): void
-    {
-        $this->slug = $slug;
-    }
-
-    /**
-     * @return Collection
-     */
-    public function getProducts(): Collection
-    {
-        return $this->products;
-    }
-
-    /**
-     * @param Collection $products
-     */
-    public function setProducts(Collection $products): void
-    {
-        $this->products = $products;
-    }
-
 }
