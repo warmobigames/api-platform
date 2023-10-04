@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ProductRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -9,9 +11,27 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation\Slug;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ApiResource]
+#[ApiFilter(
+    SearchFilter::class,
+    properties: [
+        'category' => 'exact',
+        'productCharacteristics.characteristic.id' => 'exact',
+        'productCharacteristics.valueDecimal' => 'exact'
+    ]
+)]
+
+#[ApiFilter(
+    RangeFilter::class,
+    properties: [
+        'price',
+        'productCharacteristics.valueInt'
+    ]
+)]
+
 class Product
 {
     #[ORM\Id]
@@ -37,9 +57,13 @@ class Product
     )]
     private int $price;
 
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductCharacteristic::class, orphanRemoval: true)]
+    private Collection $productCharacteristics;
+
     public function __construct()
     {
         $this->category = new ArrayCollection();
+        $this->productCharacteristics = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -109,5 +133,35 @@ class Product
     public function setPrice(int $price): void
     {
         $this->price = $price;
+    }
+
+    /**
+     * @return Collection<int, ProductCharacteristic>
+     */
+    public function getProductCharacteristics(): Collection
+    {
+        return $this->productCharacteristics;
+    }
+
+    public function addProductCharacteristic(ProductCharacteristic $productCharacteristic): static
+    {
+        if (!$this->productCharacteristics->contains($productCharacteristic)) {
+            $this->productCharacteristics->add($productCharacteristic);
+            $productCharacteristic->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProductCharacteristic(ProductCharacteristic $productCharacteristic): static
+    {
+        if ($this->productCharacteristics->removeElement($productCharacteristic)) {
+            // set the owning side to null (unless already changed)
+            if ($productCharacteristic->getProduct() === $this) {
+                $productCharacteristic->setProduct(null);
+            }
+        }
+
+        return $this;
     }
 }

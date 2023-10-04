@@ -28,22 +28,18 @@ class Category
     #[ORM\Column(length: 255)]
     private string $slug;
 
+    #[ORM\ManyToMany(targetEntity: Characteristic::class, mappedBy: 'category')]
+    private Collection $characteristics;
+
     public function __construct()
     {
         $this->products = new ArrayCollection();
+        $this->characteristics = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    /**
-     * @return Collection<int, Product>
-     */
-    public function getProducts(): Collection
-    {
-        return $this->products;
     }
 
     public function addProduct(Product $product): static
@@ -87,5 +83,32 @@ class Category
     public function getSlug(): string
     {
         return $this->slug;
+    }
+
+    /**
+     * @return Collection<int, Characteristic>
+     */
+    public function getCharacteristics(): Collection
+    {
+        return $this->characteristics;
+    }
+
+    public function addCharacteristic(Characteristic $characteristic): static
+    {
+        if (!$this->characteristics->contains($characteristic)) {
+            $this->characteristics->add($characteristic);
+            $characteristic->addCategory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCharacteristic(Characteristic $characteristic): static
+    {
+        if ($this->characteristics->removeElement($characteristic)) {
+            $characteristic->removeCategory($this);
+        }
+
+        return $this;
     }
 }
